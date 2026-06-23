@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Основные сущности
+model Product {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String
+  price       Float
+  oldPrice    Float? // старая цена для скидки
+  images      String[] // массив URL
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id])
+  stock       Int
+  createdAt   DateTime   @default(now())
+  cartItems   CartItem[]
+  order       Order?     @relation(fields: [orderId], references: [id])
+  orderId     String?
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  products Product[]
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  sessionId String // для гостей, или userId для авторизованных
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+}
+
+model Order {
+  id              String       @id @default(cuid())
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id])
+  items           Product[]
+  total           Float
+  status          OrderStatus
+  shippingAddress String
+  shippingType    ShippingType
+  paymentId       String? // ID платежа
+  createdAt       DateTime     @default(now())
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String
+  telNumber      String
+  registaratedAt DateTime @default(now())
+  role           UserRole @default(USER)
+  orders         Order[]
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum ShippingType {
+  DELIVERY
+  SELFPICKED
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  GUEST
+}
