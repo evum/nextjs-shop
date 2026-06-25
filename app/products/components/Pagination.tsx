@@ -26,7 +26,6 @@ const getVisiblePages = (currentPage: number, totalPages: number): (string | num
 		rangeWithDots.push(i);
 		prevNum = i;
 	});
-
 	return rangeWithDots;
 };
 
