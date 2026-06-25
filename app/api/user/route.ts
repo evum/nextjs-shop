@@ -9,6 +9,5 @@ export async function GET(request: NextRequest) {
 	if (!email || !pass) {
 		return NextResponse.json({ data: null });
 	}
-	return NextResponse.json({ data: {email, password: pass} });
-
+	return NextResponse.json({ data: { email, password: pass } });
 }

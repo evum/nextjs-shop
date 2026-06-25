@@ -1,3 +1,5 @@
-const AdminPanel = () => <div>asd</div>
+const AdminPanel = () => {
+	return <div>asd</div>;
+};
 
 export default AdminPanel;
