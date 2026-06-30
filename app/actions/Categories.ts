@@ -3,11 +3,9 @@
 import { prisma } from '@/lib/prisma';
 import { cache } from 'react';
 
-const getCategories = cache(
+export default cache(
 	async () =>
 		await prisma.category.findMany({
 			orderBy: { name: 'asc' }
 		})
 );
-
-export default getCategories;
