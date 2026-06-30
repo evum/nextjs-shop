@@ -1,1 +1,1 @@
-export { default as getCategories } from './categories';
+export { getCategories } from './categories';
