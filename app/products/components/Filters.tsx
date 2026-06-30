@@ -1,6 +1,6 @@
 'use client';
 
-import getCategories from '../../actions/categories';
+import getCategories from '@/app/actions/categories';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
