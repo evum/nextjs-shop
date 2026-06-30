@@ -1,11 +1,11 @@
-// app/products/components/ProductCard.tsx
 import Image from 'next/image';
 import Link from 'next/link';
-import type { ProductWithCategory } from '@/lib/products';
+import type { ProductWithCategory } from '@/app/actions/product';
 
 export default function ProductCard({ product }: { product: ProductWithCategory }) {
+	console.log(product.images[0]);
 	return (
-		<Link href={`/products/${product.id}`} className="group block h-full">
+		<Link href={`/products/${product.slug}`} className="group block h-full">
 			<div className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full flex flex-col bg-white">
 				<div className="relative aspect-square w-full bg-gray-100">
 					<Image

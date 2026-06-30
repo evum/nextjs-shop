@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '../../lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { cache } from 'react';
 
 const getCategories = cache(

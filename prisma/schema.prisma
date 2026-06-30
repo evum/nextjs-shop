@@ -9,8 +9,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
-
 
 model User {
   id            String    @id @default(cuid())
@@ -20,8 +20,8 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  orders         Order[]
-  role           UserRole @default(USER)
+  orders        Order[]
+  role          UserRole  @default(USER)
   password      String
 }
 
@@ -61,20 +61,19 @@ model VerificationToken {
 
 // Основные сущности
 model Product {
-  id          String     @id @default(cuid())
-  name        String
-  slug        String     @unique
-  description String
-  price       Float
-  oldPrice    Float? // старая цена для скидки
-  images      String[] // массив URL
-  categoryId  String
-  category    Category   @relation(fields: [categoryId], references: [id])
-  stock       Int
-  createdAt   DateTime   @default(now())
-  cartItems   CartItem[]
-  order       Order?     @relation(fields: [orderId], references: [id])
-  orderId     String?
+  id           String         @id @default(cuid())
+  name         String
+  slug         String         @unique
+  description  String
+  price        Float
+  oldPrice     Float? // старая цена для скидки
+  images       String[] // массив URL
+  categoryId   String
+  category     Category       @relation(fields: [categoryId], references: [id])
+  stock        Int
+  createdAt    DateTime       @default(now())
+  CartItems    CartItem[]
+  ItemsInOrder ItemsInOrder[]
 }
 
 model Category {
@@ -92,18 +91,27 @@ model CartItem {
 }
 
 model Order {
-  id              String       @id @default(cuid())
+  id              String         @id @default(cuid())
   userId          String?
-  user            User?        @relation(fields: [userId], references: [id])
-  items           Product[]
+  user            User?          @relation(fields: [userId], references: [id])
   total           Float
   status          OrderStatus
-  shippingAddress String
-  shippingType    ShippingType
+  shippingAddress String?
+  shippingType    ShippingType?
   paymentId       String? // ID платежа
-  createdAt       DateTime     @default(now())
+  paymentMethod	  PaymentMethod
+  createdAt       DateTime       @default(now())
+  ItemsInOrder    ItemsInOrder[]
 }
 
+model ItemsInOrder {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  quantity  Int
+}
 
 enum OrderStatus {
   PENDING
@@ -122,4 +130,9 @@ enum UserRole {
   ADMIN
   USER
   GUEST
+}
+
+enum PaymentMethod {
+	ONLINE
+	AFTERDELIVERY
 }

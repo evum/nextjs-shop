@@ -1,6 +1,5 @@
-// app/products/components/ProductList.tsx
+import { ProductWithCategory } from '@/app/actions/product';
 import ProductCard from './ProductCard';
-import { ProductWithCategory } from '@/lib/products';
 
 export default function ProductList({ products }: { products: ProductWithCategory[] }) {
 	if (products.length === 0) {
