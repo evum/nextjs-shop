@@ -1,10 +1,27 @@
-// middleware.ts — минимальный вариант для теста
+// proxy.ts
+import { authConfig } from './auth.config';
 import { NextResponse } from 'next/server';
+import NextAuth from 'next-auth';
 
-export default function middleware() {
-	return NextResponse.next();
-}
+const { auth } = NextAuth(authConfig);
+
+export default auth((req) => {
+	const sessionId = req.cookies.get('sessionId')?.value;
+	const response = NextResponse.next();
+
+	if (!sessionId) {
+		response.cookies.set('sessionId', crypto.randomUUID(), {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax',
+			path: '/',
+			maxAge: 60 * 60 * 24 * 30
+		});
+		return response;
+	}
+	return response;
+});
 
 export const config = {
-	matcher: ['/login']
+	matcher: ['/login', '/((?!api|_next/static|_next/image|favicon.ico).*)']
 };
