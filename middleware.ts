@@ -1,11 +1,8 @@
-// proxy.ts
-import { authConfig } from './auth.config';
+// import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
-import NextAuth from 'next-auth';
+import type { NextRequest } from 'next/server';
 
-const { auth } = NextAuth(authConfig);
-
-export default auth((req) => {
+export default async function middleware(req: NextRequest) {
 	const sessionId = req.cookies.get('sessionId')?.value;
 	const response = NextResponse.next();
 
@@ -17,10 +14,10 @@ export default auth((req) => {
 			path: '/',
 			maxAge: 60 * 60 * 24 * 30
 		});
-		return response;
 	}
+
 	return response;
-});
+}
 
 export const config = {
 	matcher: ['/login', '/((?!api|_next/static|_next/image|favicon.ico).*)']
