@@ -2,11 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { cache } from 'react';
-import {
-	FloatFilter,
-	ProductOrderByWithRelationInput,
-	ProductWhereInput
-} from '../generated/prisma/models';
+import type { Prisma } from '@prisma/client';
 import { Category, Product } from '@prisma/client';
 
 export type ProductWithCategory = Product & {
@@ -57,13 +53,16 @@ export async function getProducts({ category, minPrice, maxPrice, sort, page }: 
 	const perPage = 10;
 	const skip = (page - 1) * perPage;
 
-	const where: ProductWhereInput = {};
+	const where: Prisma.ProductWhereInput = {};
 	category && (where.category = { name: category });
 	minPrice && (where.price = { gte: minPrice });
 	maxPrice &&
-		(where.price = { ...((where.price as FloatFilter<'Product'>) || {}), lte: maxPrice });
+		(where.price = {
+			...((where.price as Prisma.FloatFilter<'Product'>) || {}),
+			lte: maxPrice
+		});
 
-	let orderBy: ProductOrderByWithRelationInput = {};
+	let orderBy: Prisma.ProductOrderByWithRelationInput = {};
 	if (sort === 'price-asc') orderBy = { price: 'asc' };
 	else if (sort === 'price-desc') orderBy = { price: 'desc' };
 	else if (sort === 'name') orderBy = { name: 'asc' };
