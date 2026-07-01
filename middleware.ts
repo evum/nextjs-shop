@@ -1,11 +1,12 @@
 export const runtime = 'nodejs';
-import { auth } from '@/auth';
+import { authConfig } from './auth.config';
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import NextAuth from 'next-auth';
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-	const { pathname } = req.nextUrl;
-	const session = req.auth;
 	const sessionId = req.cookies.get('sessionId')?.value;
 	const response = NextResponse.next();
 
@@ -19,9 +20,6 @@ export default auth((req) => {
 		});
 		return response;
 	}
-	// if (pathname.startsWith('/checkout') && !session?.user) {
-	// 	return NextResponse.redirect(new URL('/', req.url));
-	// }
 	return response;
 });
 export const config = {
