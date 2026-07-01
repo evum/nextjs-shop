@@ -1,7 +1,6 @@
 export const runtime = 'nodejs';
 import { authConfig } from './auth.config';
 import { NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 import NextAuth from 'next-auth';
 
 const { auth } = NextAuth(authConfig);
@@ -11,7 +10,7 @@ export default auth((req) => {
 	const response = NextResponse.next();
 
 	if (!sessionId) {
-		response.cookies.set('sessionId', randomUUID(), {
+		response.cookies.set('sessionId', crypto.randomUUID(), {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'lax',
