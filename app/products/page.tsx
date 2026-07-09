@@ -19,7 +19,13 @@ type ProductPageProps = {
 };
 
 export const metadata: Metadata = {
-	title: 'Каталог товаров'
+	title: 'Каталог товаров',
+	openGraph: {
+		title: 'Все товары — купить с доставкой',
+		description: 'Лучшая цена на рынке на всё',
+		url: 'https://nextjs-shop-8cgb.vercel.app/products',
+		siteName: 'MyShop'
+	}
 };
 
 export default async function ProductsPage({ searchParams }: ProductPageProps) {

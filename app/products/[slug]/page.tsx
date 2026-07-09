@@ -13,7 +13,30 @@ type ProductPageProps = {
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
 	const { slug } = await params;
 	const product = await getProductBySlug(slug);
-	return { title: product?.name || 'Товар не найден', description: product?.description || '' };
+	return {
+		title: product?.name || 'Товар не найден',
+		description: product?.description || '',
+		openGraph: {
+			title: `${product.name || 'Товары'} — купить с доставкой`,
+			description: `${product.name || 'Все товары -'} лучшая цена на рынке`,
+			url: `https://nextjs-shop-8cgb.vercel.app/products/${product.slug}`,
+			images: [
+				{
+					url: product.images[0],
+					width: 1200,
+					height: 630,
+					alt: product.name
+				}
+			],
+			siteName: 'MyShop'
+		},
+		twitter: {
+			card: 'summary_large_image', // используйте 'summary' если изображение небольшое
+			title: product.name,
+			description: product.description,
+			images: [product.images[0]]
+		}
+	};
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
