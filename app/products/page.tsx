@@ -4,6 +4,7 @@ import Filters from './components/Filters';
 import SortSelect from './components/SortSelect';
 import Pagination from './components/Pagination';
 import Link from 'next/link'; // добавлен импорт
+import { Metadata } from 'next';
 
 type SearchParams = {
 	category?: string;
@@ -15,6 +16,10 @@ type SearchParams = {
 
 type ProductPageProps = {
 	searchParams: Promise<SearchParams>;
+};
+
+export const metadata: Metadata = {
+	title: 'Каталог товаров'
 };
 
 export default async function ProductsPage({ searchParams }: ProductPageProps) {

@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,6 +9,12 @@ import ProductInfo from './components/ProductInfo';
 type ProductPageProps = {
 	params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+	const { slug } = await params;
+	const product = await getProductBySlug(slug);
+	return { title: product?.name || 'Товар не найден', description: product?.description || '' };
+}
 
 export default async function ProductPage({ params }: ProductPageProps) {
 	const { slug } = await params;
