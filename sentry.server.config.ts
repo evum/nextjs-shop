@@ -7,5 +7,7 @@ Sentry.init({
 
 	includeLocalVariables: true,
 
-	enableLogs: true
+	enableLogs: true,
+
+	integrations: [Sentry.featureFlagsIntegration()]
 });

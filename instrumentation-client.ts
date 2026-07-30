@@ -10,7 +10,7 @@ Sentry.init({
 
 	enableLogs: true,
 
-	integrations: [Sentry.replayIntegration()]
+	integrations: [Sentry.replayIntegration(), Sentry.featureFlagsIntegration()]
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

@@ -1,5 +1,8 @@
 import { SessionProvider } from 'next-auth/react';
 import { Metadata } from 'next';
+import SentryFeatureFlags from '@/components/SentryFeatureFlags';
+import PromoBanner from '@/components/PromoBanner';
+import { getFeatureFlags } from '@/lib/feature-flags';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,9 +18,13 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+	const flags = getFeatureFlags();
+
 	return (
 		<html lang="ru">
 			<body>
+				<SentryFeatureFlags flags={flags} />
+				{flags['promo-banner'] ? <PromoBanner /> : null}
 				<SessionProvider>{children}</SessionProvider>
 			</body>
 		</html>
