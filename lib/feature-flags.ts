@@ -55,7 +55,7 @@ function resolveFlag(flag: FeatureFlag): boolean {
 export function trackFeatureFlag(flag: string, value: boolean): void {
 	const integration = Sentry.getClient()?.getIntegrationByName(
 		'FeatureFlags'
-	) as FeatureFlagsIntegration | undefined;
+	) as unknown as FeatureFlagsIntegration | undefined;
 
 	if (integration?.addFeatureFlag) {
 		integration.addFeatureFlag(flag, value);
