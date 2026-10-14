@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# nextjspet — учебный интернет-магазин
 
-## Getting Started
+Веб-приложение интернет-магазина. Проект включает каталог товаров, гостевую корзину, регистрацию, вход и оформление заказов. Данные хранятся в PostgreSQL, серверная логика реализована через Next.js Server Actions.
 
-First, run the development server:
+## Возможности
+
+- Каталог с фильтрами по категории и цене, сортировкой по цене или названию и пагинацией по 10 товаров.
+- Страница товара с галереей, описанием, ценой, остатком и похожими товарами.
+- Корзина: добавление товаров, изменение количества, удаление через установку количества в ноль и очистка.
+- Гостевая корзина привязана к cookie `sessionId`; после входа её содержимое переносится в корзину пользователя, привязанную к email.
+- Регистрация по email и паролю, хеширование паролей через bcrypt и авторизация с JWT-сессиями.
+- Создание заказа для авторизованного пользователя, расчёт суммы, очистка корзины и просмотр статуса заказа.
+- Метаданные страниц, Open Graph и Twitter Cards для товаров.
+- Интеграция Sentry: ошибки, трассировка, логи, запись браузерных сессий и отслеживание флагов функций.
+
+## Технологии
+
+- Next.js 16.2.9, App Router и React 19.2.4.
+- TypeScript 5 и Tailwind CSS 4.
+- PostgreSQL и Prisma 6.15.0.
+- NextAuth / Auth.js 5 (beta), Credentials Provider и bcryptjs.
+- Sentry для Next.js и ESLint 9.
+
+## Структура проекта
+
+```text
+app/
+  actions/              Серверные операции с товарами, корзиной, заказами и пользователями
+  api/auth/             API авторизации
+  products/             Каталог и страницы товаров
+  cart/                 Корзина
+  checkout/             Оформление заказа
+  order/                Просмотр заказа
+  login/, register/     Формы авторизации
+components/             Промобаннер и интеграция флагов с Sentry
+lib/                    Prisma Client и вычисление флагов функций
+prisma/                 Схема базы и миграции
+public/images/          Изображения товаров и заглушка
+types/                  Расширения типов NextAuth
+auth.ts                 Проверка email и пароля, обработчики авторизации
+auth.config.ts          JWT-сессии и настройки Auth.js
+proxy.ts                Создание cookie гостевой корзины
+next.config.ts          Настройки Next.js и Sentry
+```
+
+## Требования
+
+- Node.js версии **20.9 или выше**.
+- npm.
+- Запущенный PostgreSQL и отдельная база для локальной разработки.
+
+## Локальный запуск
+
+Выполняйте команды из корня проекта.
+
+### 1. Настройте окружение
+
+Создайте файл `.env` в корне проекта:
+
+```dotenv
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/nextjspet?schema=public"
+NEXTAUTH_SECRET="replace_with_generated_secret"
+```
+
+В `DATABASE_URL` укажите свои имя пользователя, пароль, адрес сервера и имя заранее созданной базы. Пример использует прямое подключение к PostgreSQL. Если пароль содержит специальные символы, закодируйте их для URL.
+
+Сгенерируйте секрет авторизации и вставьте результат вместо `replace_with_generated_secret`:
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+Используйте именно `NEXTAUTH_SECRET`: это имя явно читается в `auth.config.ts`. Файл `.env` подходит и для Next.js, и для Prisma CLI: `prisma.config.ts` загружает его через `dotenv/config`. Файлы `.env*` исключены из Git.
+
+Если в рабочей копии уже есть `.env.local` или `.env.development.local`, проверьте, что они не переопределяют настройки приложения значениями для другой базы. Prisma CLI в этом проекте загружает `.env`, поэтому адрес базы для CLI и приложения должен совпадать.
+
+### 2. Установите зависимости и сгенерируйте Prisma Client
+
+```bash
+npm ci
+npx prisma generate
+```
+
+Дополнительный `prisma generate` нужен для прямого подключения к PostgreSQL: скрипт `postinstall` запускает генерацию с `--no-engine`, а `lib/prisma.ts` создаёт обычный `new PrismaClient()` без подключения адаптера. Повторная генерация без этого флага создаёт клиент с движком. После следующего `npm ci` повторите эту команду.
+
+### 3. Подготовьте локальную базу
+
+Для **новой отдельной базы разработки** синхронизируйте структуру с актуальной Prisma-схемой:
+
+```bash
+npx prisma db push
+```
+
+### 4. Добавьте товары
+
+Скрипт автоматического заполнения базы (`seed`) отсутствует. После создания схемы каталог будет пустым. Откройте Prisma Studio:
+
+```bash
+npx prisma studio
+```
+
+Сначала создайте запись `Category` с названием, затем запись `Product` с полями:
+
+- `name` — название товара;
+- `slug` — уникальный адрес, например `demo-product`;
+- `description` — описание;
+- `price` — цена в рублях;
+- `images` — массив путей, например `["/images/products/1.png"]`;
+- `categoryId` — ID созданной категории;
+- `stock` — остаток, например `10`.
+
+Поля `id` и `createdAt` имеют значения по умолчанию, `oldPrice` необязательно. В `public/images/products/` уже есть изображения `1.png`–`50.png`, но связанные записи товаров нужно создать отдельно.
+
+Пользователя создайте через страницу `/register`; минимальная длина пароля — 6 символов.
+
+### 5. Запустите приложение
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000). Для проверки основного сценария перейдите в каталог, добавьте товар в корзину, зарегистрируйтесь, войдите и оформите заказ с доставкой курьером и оплатой при получении.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Основные страницы
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/` — главная страница.
+- `/products` — каталог.
+- `/products/[slug]` — страница товара.
+- `/cart` — корзина.
+- `/register` и `/login` — регистрация и вход.
+- `/checkout` — оформление заказа; создание заказа требует входа.
+- `/order/[id]` — просмотр собственного заказа.
+- `/api/auth/[...nextauth]` — обработчики Auth.js.
 
-## Learn More
+## Команды
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run dev      # Сервер разработки (Turbopack по умолчанию)
+npm run build    # Сборка приложения
+npm run start    # Запуск собранного приложения
+npm run lint     # Проверка ESLint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Для запуска production-сборки сначала настройте окружение и базу, затем выполните:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npx prisma generate
+npm run build
+npm run start
+```
 
-## Deploy on Vercel
+Команда `start` требует успешной сборки. Отдельного скрипта тестов в `package.json` нет.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Дополнительные настройки
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Sentry
+
+Для отправки событий задайте в окружении:
+
+```dotenv
+NEXT_PUBLIC_SENTRY_DSN="https://examplePublicKey@o0.ingest.sentry.io/0"
+SENTRY_DSN="https://examplePublicKey@o0.ingest.sentry.io/0"
+```
+
+Браузер использует `NEXT_PUBLIC_SENTRY_DSN`; сервер и Edge используют `SENTRY_DSN`, а при его отсутствии — публичный DSN. Без DSN отправка событий не настроена.
+
+Для загрузки source maps при сборке используются `SENTRY_ORG`, `SENTRY_PROJECT` и `SENTRY_AUTH_TOKEN`. Токен задаётся только в серверном окружении или CI. В `next.config.ts` настроен туннель `/monitoring`.
+
+### Флаги функций
+
+Оба флага по умолчанию выключены. Для включения промобаннера добавьте:
+
+```dotenv
+NEXT_PUBLIC_FEATURE_FLAGS='{"promo-banner":true,"express-checkout":false}'
+```
+
+`promo-banner` показывает предложение бесплатной доставки в верхней части страниц. `express-checkout` объявлен и отслеживается в Sentry, но отдельный сценарий быстрого оформления ещё не реализован. JSON-настройки имеют приоритет над индивидуальными переменными `NEXT_PUBLIC_FF_PROMO_BANNER` и `NEXT_PUBLIC_FF_EXPRESS_CHECKOUT`, которые также обрабатывает серверный модуль `lib/feature-flags.ts`. После изменения окружения перезапустите сервер; для production выполните новую сборку.
